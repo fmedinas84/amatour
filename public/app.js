@@ -88,12 +88,22 @@ document.addEventListener('change',e=>{
     if(busy)return;date=$('#booking-date').value;minutes=Number($('#booking-duration').value);loadAgenda();
   }
 });
-$('#club-query').addEventListener('input',renderClubs);
+$('#club-query').addEventListener('input',()=>{
+  $('#hero-query').value=$('#club-query').value;
+  renderClubs();
+});
 $('#court-type').addEventListener('change',renderClubs);
 $('#only-available').addEventListener('change',renderClubs);
-$('#clear-filters').addEventListener('click',()=>{$('#club-query').value='';$('#court-type').value='';$('#only-available').checked=false;renderClubs();});
-$('#hero-search-button').addEventListener('click',()=>toast('El buscador global estará disponible pronto. Ya puedes explorar los clubes y reservar más abajo.'));
-$('#hero-query').addEventListener('keydown',e=>{if(e.key==='Enter')$('#hero-search-button').click();});
+$('#clear-filters').addEventListener('click',()=>{$('#club-query').value='';$('#hero-query').value='';$('#court-type').value='';$('#only-available').checked=false;renderClubs();});
+$('#hero-search').addEventListener('submit',e=>{
+  e.preventDefault();
+  const query=$('#hero-query').value.trim();
+  $('#hero-query').value=query;
+  $('#club-query').value=query;
+  renderClubs();
+  $('#clubes').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  $('#result-count').focus({preventScroll:true});
+});
 $('#my-bookings').addEventListener('click',openBookings);
 $('#club-dialog').addEventListener('cancel',e=>{if(busy)e.preventDefault();else agendaVersion++;});
 countBookings();loadClubs();

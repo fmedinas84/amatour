@@ -8,6 +8,20 @@ test('filters accents, club address and indoor/outdoor courts',()=>{
  assert.equal(filterClubs(clubs,'bosque','indoor').length,1);
  assert.equal(filterClubs(clubs,'','').length,2);
 });
+test('keyword search matches words in any order across club and court fields',()=>{
+ const clubs=[
+  {name:'Club Bosque',address:'La Dehesa, Lo Barnechea',courts:[{name:'Cancha 1',status:'ACTIVE',is_indoor:true,surface_type:'Césped sintético'}]},
+  {name:'Club Parque',address:'Peñalolén',courts:[{name:'Cancha 2',status:'ACTIVE',is_indoor:false}]},
+ ];
+ assert.equal(filterClubs(clubs,'DEHESA bosque','')[0].name,'Club Bosque');
+ assert.equal(filterClubs(clubs,'  bosque, TECHADAS!  ','').length,1);
+ assert.equal(filterClubs(clubs,'cesped sintetico','').length,1);
+ assert.equal(filterClubs(clubs,'penalolen aire libre','')[0].name,'Club Parque');
+ assert.equal(filterClubs(clubs,'bosque penalolen','').length,0);
+ assert.equal(filterClubs(clubs,'   ','').length,2);
+ assert.equal(filterClubs(clubs,'no-existe','').length,0);
+ assert.equal(filterClubs(clubs,'bosque','outdoor').length,0);
+});
 test('uses club timezone rather than browser timezone',()=>{
  assert.equal(localDate('America/Santiago',new Date('2026-10-25T01:00:00Z')),'2026-10-24');
  assert.equal(localDate('Asia/Tokyo',new Date('2026-10-25T01:00:00Z')),'2026-10-25');

@@ -1,0 +1,33 @@
+/* Make the next step unmistakable on desktop and touch screens. */
+.card-action {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.card-action button {
+  width: 100%;
+  min-height: 52px;
+  justify-content: space-between;
+  padding: 15px 18px;
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  background: var(--green);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .15s ease, box-shadow .15s ease;
+}
+
+.card-action button:hover {
+  background: #183c29;
+  box-shadow: 0 4px 12px #183c2926;
+}
+
+.card-action button span {
+  font-size: 23px;
+}
+
+.card-action .available-note {
+  font-size: 11px;
+}

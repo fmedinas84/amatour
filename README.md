@@ -1,8 +1,11 @@
 # Amatour web — prototipo funcional
 
 Home y catálogo de clubes con reservas reales en Supabase. Sin login ni pagos.
-El buscador global del hero es una propuesta visual; los filtros del catálogo
-funcionan por nombre/dirección, cancha techada/al aire libre y disponibilidad hoy.
+El buscador del hero funciona por palabras de nombre, dirección, comuna y
+características de cancha. No distingue mayúsculas ni tildes y acepta palabras
+en cualquier orden. Al pulsar el CTA o Enter muestra los clubes que contienen
+todas las palabras y conserva los filtros activos del catálogo. También se
+puede filtrar por cancha techada/al aire libre y disponibilidad hoy.
 
 ## Ejecutar
 

@@ -24,6 +24,18 @@ export function durationLabel(minutes) {
   return minutes < 60 ? `${minutes} min` : minutes % 60 ? `${Math.floor(minutes/60)} h 30 min` : `${minutes/60} ${minutes === 60 ? 'hora' : 'horas'}`;
 }
 export function filterClubs(clubs,query,type) {
-  const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  return clubs.filter(c=>normalize(c.name+' '+c.address).includes(normalize(query.trim())) && (!type || c.courts.some(ct=>type === 'indoor' ? ct.is_indoor : !ct.is_indoor)));
+  const normalize=s=>String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const words=normalize(query).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  return clubs.filter(club=>{
+    const courts=club.courts.filter(court=>court.status === undefined || court.status === 'ACTIVE');
+    const searchable=normalize([
+      club.name,club.address,
+      ...courts.flatMap(court=>[
+        court.name,court.surface_type,court.description,
+        court.is_indoor ? 'techada techadas indoor' : 'aire libre exterior exteriores outdoor',
+      ]),
+    ].join(' '));
+    return words.every(word=>searchable.includes(word))
+      && (!type || courts.some(court=>type === 'indoor' ? court.is_indoor : !court.is_indoor));
+  });
 }
