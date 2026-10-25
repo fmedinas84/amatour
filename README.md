@@ -1,0 +1,49 @@
+# Amatour web — prototipo funcional
+
+Home y catálogo de clubes con reservas reales en Supabase. Sin login ni pagos.
+El buscador global del hero es una propuesta visual; los filtros del catálogo
+funcionan por nombre/dirección, cancha techada/al aire libre y disponibilidad hoy.
+
+## Ejecutar
+
+Node.js 20 o superior, sin dependencias de ejecución:
+
+```sh
+npm run dev
+npm test
+npm run check
+```
+
+Abrir http://localhost:3000. La configuración de Vercel sirve `public/` como
+sitio estático. No se ha desplegado todavía.
+
+## Datos y flujo
+
+Proyecto Supabase `prrfytdglzozamvjffxx`. El navegador solo recibe la clave
+publishable. Las tablas de reservas permanecen protegidas por RLS y no permiten
+escritura directa a invitados. Dos funciones públicas acotadas exponen solo la
+ocupación y permiten confirmar una reserva de invitado.
+
+Los clubes Bosque, Cordillera y Parque son ficticios y están marcados Demo.
+Las reservas sí se guardan en la base. Se permiten duraciones de 30 a 180 minutos,
+en múltiplos de 30, dentro de los próximos 30 días y horario local del club.
+El límite inicial es cinco reservas futuras por identidad de navegador.
+
+La identidad invitada y los comprobantes se guardan en localStorage. No hay
+recuperación entre dispositivos ni cancelación desde la interfaz todavía.
+Las restricciones GiST y los triggers existentes evitan doble reserva.
+
+## Antes de publicar
+
+Este prototipo de reservas públicas fue autorizado expresamente para pruebas.
+Antes de producción se necesita control de abuso real (rate limiting en servidor,
+CAPTCHA o identidad verificada) y un mecanismo de recuperación/cancelación de
+reservas. El límite por navegador no impide que alguien cambie su identidad.
+El pago no está integrado y la confirmación actual no implica cobro.
+
+## SQL
+
+`database/guest_booking.sql` amplía las reservas con `guest_id`, manteniendo
+exactamente una identidad: usuario registrado o invitado. No crea usuarios
+ficticios en Auth. `database/demo_clubs.sql` es la carga explícita de demos;
+no volver a ejecutarla si los slugs ya existen.
