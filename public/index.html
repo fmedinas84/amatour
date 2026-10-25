@@ -7,6 +7,7 @@
   <title>Amatour — Tu próximo partido empieza aquí</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/club-actions.css">
   <script type="module" src="/app.js"></script>
 </head>
 <body>
@@ -21,8 +22,8 @@
       <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> MENOS VUELTAS. MÁS PÁDEL.</p>
         <h1>Tu próximo<br>partido empieza<br><span>por una cancha.</span></h1>
         <p class="hero-subtitle">Encuentra tu lugar, elige tu hora y vuelve a lo que<br class="desktop"> importa: jugar.</p>
-        <div class="hero-search"><span class="search-icon" aria-hidden="true">⌕</span><label class="sr-only" for="hero-query">¿Dónde quieres jugar?</label><input id="hero-query" placeholder="¿Dónde quieres jugar?" autocomplete="off"><button id="hero-search-button" aria-describedby="search-note">Encuentra tu cancha <span>↗</span></button></div>
-        <p class="search-note" id="search-note">Buscador global próximamente. <a href="#clubes">Explora los clubes disponibles →</a></p>
+        <form class="hero-search" id="hero-search" role="search" aria-label="Encuentra tu cancha"><span class="search-icon" aria-hidden="true">⌕</span><label class="sr-only" for="hero-query">¿Dónde quieres jugar?</label><input type="search" id="hero-query" placeholder="Club, comuna o tipo de cancha" autocomplete="off"><button type="submit" id="hero-search-button" aria-describedby="search-note">Encuentra tu cancha <span>↗</span></button></form>
+        <p class="search-note" id="search-note">Busca con tus palabras: “Bosque”, “Las Condes” o “techadas”. <a href="#clubes">Ver todos los clubes →</a></p>
         <div class="hero-benefits"><span>✓ Sin llamadas</span><span>✓ Horarios en tiempo real</span><span>✓ Tú eliges cuánto jugar</span></div>
       </div>
       <div class="hero-art" aria-label="Ilustración de una cancha de pádel verde">
@@ -48,7 +49,7 @@
     <section class="clubs-section" id="clubes"><div class="wrap">
       <div class="section-heading"><div><p class="eyebrow">ENCUENTRA TU LUGAR</p><h2>Una cancha para tu próximo partido.</h2></div><p>Explora. Elige. Juega.</p></div>
       <div class="filters"><div class="filter-search"><span aria-hidden="true">⌕</span><label class="sr-only" for="club-query">Buscar clubes</label><input type="search" id="club-query" placeholder="Busca por club, comuna o dirección"></div><label class="type-filter"><span>Tipo de cancha</span><select id="court-type"><option value="">Todas las canchas</option value="indoor">Techadas</option><option value="outdoor">Al aire libre</option></select></label><label class="availability-filter"><input id="only-available" type="checkbox"> Con horarios disponibles hoy</label><button class="text-button" id="clear-filters">Limpiar filtros</button></div>
-      <div class="results-line"><span id="result-count" role="status">Conectando con los clubes…</span><span class="demo-label">Catálogo de demostración</span></div>
+      <div class="results-line"><span id="result-count" role="status" tabindex="-1">Conectando con los clubes…</span><span class="demo-label">Catálogo de demostración</span></div>
       <div id="clubs-grid" class="clubs-grid" aria-live="polite"></div>
       <div class="how-it-works"><span class="step-number">01</span><p><strong>Encuentra tu club</strong><br>Un lugar que te quede bien.</p><span class="step-number">02</span><p><strong>Haz espacio para jugar</strong><br>De 30 minutos a 3 horas.</p><span class="step-number">03</span><p><strong>Nos vemos en la cancha</strong><br>Tu hora queda reservada.</p><span class="how-arrow">↗</span></div>
     </div></section>
