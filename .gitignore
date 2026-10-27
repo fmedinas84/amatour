@@ -1,5 +1,7 @@
 node_modules/
 .manager-local.json
+.manager-hosted.json
+ACCESO-GESTOR.txt
 .env
 .env.*
 !.env.example

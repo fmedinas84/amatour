@@ -1,26 +1,55 @@
-import {localDate,datePlus,getClubs} from './api.js';
+import {localDate,datePlus} from './api.js';
 import {days,esc,clock,minute,windowRange,amount,localStamp,addMinutesLocal,states,activeReservation,matrixRate,calendarRate} from './manager-utils.js';
 const $=s=>document.querySelector(s);
 const content=$('#manager-content'),dialog=$('#manager-dialog');
 let allClubs=[],snapshot=null,clubId=null,tab='summary',day='',courtFilter='',rateCourt='',saving=false,modalContext={};
 let routeVersion=0;
 const localManager=['localhost','127.0.0.1'].includes(location.hostname);
-async function publicClubView(){
- const version=++routeVersion;
- content.innerHTML='<div class="empty-state">Cargando clubes…</div>';
- try{
-  const clubs=await getClubs();if(version!==routeVersion)return;
-  const id=new URLSearchParams(location.hash.slice(1)).get('club');
-  const club=clubs.find(c=>c.id===id);
-  $('#nav-club').textContent=club?.name||'';$('#club-tabs').innerHTML='';
-  document.querySelector('.manager-banner').textContent='Consulta pública · La edición requiere una sesión administrativa protegida.';
-  document.querySelector('.sidebar-note').textContent='Consulta de datos públicos de Supabase. Gestión y edición disponibles en el servidor local protegido.';
-  if(id&&!club)throw Error('No encontramos el club solicitado.');
-  content.innerHTML=club?title(club.name,'Canchas registradas · Solo lectura')+`<div class="manager-panel table-wrap"><table class="manager-table"><thead><tr><th>Cancha</th><th>Superficie</th><th>Tipo</th><th>Estado</th></tr></thead><tbody>${club.courts.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.surface_type||'No especificada')}</td><td>${c.is_indoor?'Techada':'Exterior'}</td><td>${esc({ACTIVE:'Activa',MAINTENANCE:'En mantenimiento',INACTIVE:'Inactiva'}[c.status]||'No informado')}</td></tr>`).join('')||'<tr><td colspan="4">Sin canchas registradas.</td></tr>'}</tbody></table></div>`:title('Mis clubes','Clubes disponibles · Consulta pública de clubes y canchas.')+`<div class="manager-grid">${clubs.map(c=>`<article class="manager-card"><span class="status-badge">Solo lectura</span><h2>${esc(c.name)}</h2><p>${esc(c.address)}</p><p>${c.courts.length} canchas · ${c.courts.filter(x=>x.status==='ACTIVE').length} activas</p><a class="manager-button" href="#club=${encodeURIComponent(c.id)}">Ver canchas ↗</a></article>`).join('')||'<div class="empty-state">Sin clubes registrados.</div>'}</div>`;
- }catch(e){content.innerHTML=title('Mis clubes','Consulta pública')+`<div class="error-state">${esc(e.message)}</div>`;}
+let managerReady=localManager;
+function accessForm(message=''){
+ managerReady=false;$('#nav-club').textContent='';$('#club-tabs').innerHTML='';
+ document.querySelector('.manager-banner').textContent='Gestor de demostración · Acceso temporal protegido · Sin cobros reales';
+ document.querySelector('.sidebar-note').textContent='Ingresa para gestionar clubes Demo. La sesión dura ocho horas.';
+ content.innerHTML=title('Acceso clubes','Ingresa tu clave temporal para abrir el gestor completo.')+`<div class="manager-panel"><form id="manager-access" class="manager-form"><label class="full">Clave temporal<input name="access_key" type="password" required autocomplete="off" maxlength="256"></label><p class="full helper">Podrás gestionar canchas, calendario, bloqueos y tarifas de los clubes Demo.</p><p id="access-error" class="full" role="alert">${esc(message)}</p><div class="form-actions"><button class="manager-button" type="submit">Entrar al gestor</button></div></form></div>`;
 }
+async function sessionRequest(options={}){
+ const response=await fetch('/api/manager/session',options);
+ if(!response.headers.get('content-type')?.includes('application/json'))throw Error('No se pudo conectar con el acceso administrativo. Recarga en unos instantes.');
+ const data=await response.json();if(!response.ok)throw Error(data.error||'No se pudo iniciar la sesión.');return data;
+}
+async function startManager(){
+ try{
+  const session=await sessionRequest();
+  if(!session.enabled){accessForm();return;}
+  managerReady=true;
+  if(!localManager){
+   document.querySelector('.manager-banner').textContent='Sesión temporal protegida · Clubes Demo editables · Sin cobros reales';
+   document.querySelector('.sidebar-note').textContent='Sesión protegida de ocho horas. Cambios guardados en Supabase. Solo clubes Demo son editables.';
+   if(!$('#manager-signout')){const out=document.createElement('button');out.id='manager-signout';out.className='manager-button secondary';out.textContent='Cerrar sesión';document.querySelector('.manager-header').append(out);}
+  }
+  await route();
+ }catch(e){accessForm(e.message);}
+}
+document.addEventListener('submit',async e=>{
+ if(e.target.id!=='manager-access')return;e.preventDefault();
+ const submit=e.target.querySelector('button');submit.disabled=true;
+ try{
+  await sessionRequest({method:'POST',headers:{'Content-Type':'application/json','X-Amatour-Manager':'1'},body:JSON.stringify({access_key:new FormData(e.target).get('access_key')})});
+  e.target.reset();await startManager();
+ }catch(error){$('#access-error').textContent=error.message;submit.disabled=false;}
+});
+document.addEventListener('click',async e=>{
+ if(e.target.id!=='manager-signout')return;
+ try{await sessionRequest({method:'DELETE',headers:{'X-Amatour-Manager':'1'}});e.target.remove();accessForm();}catch(error){notify(error.message);}
+});
 const tabs={summary:'Resumen',courts:'Canchas',calendar:'Calendario',rates:'Tarifas',settings:'Configuración'};
-async function api(action,data={},id=clubId){const r=await fetch('/api/manager',{method:'POST',headers:{'Content-Type':'application/json','X-Amatour-Manager':'1'},body:JSON.stringify({action,club_id:id,data})});const result=await r.json();if(!r.ok)throw Error(result.error||'No se pudo completar la operación.');return result;}
+async function api(action,data={},id=clubId){
+ const r=await fetch('/api/manager',{method:'POST',headers:{'Content-Type':'application/json','X-Amatour-Manager':'1'},body:JSON.stringify({action,club_id:id,data})});
+ if(!r.headers.get('content-type')?.includes('application/json'))throw Error('El servicio administrativo no está disponible. Intenta nuevamente.');
+ const result=await r.json();
+ if(r.status===401){accessForm('La sesión venció. Ingresa nuevamente con tu clave temporal.');throw Error('Sesión vencida.');}
+ if(!r.ok)throw Error(result.error||'No se pudo completar la operación.');return result;
+}
 function notify(message){const t=$('#manager-toast');t.textContent=message;t.hidden=false;clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.hidden=true,5000);}
 function title(name,subtitle,action=''){return `<div class="manager-title"><div><p class="eyebrow">AMATOUR · OPERACIÓN</p><h1>${esc(name)}</h1><p>${esc(subtitle)}</p></div>${action}</div>`;}
 function button(text,action,extra='',secondary=false){return `<button class="manager-button ${secondary?'secondary':''}" data-action="${action}" ${extra}>${esc(text)}</button>`;}
@@ -48,7 +77,7 @@ async function route(){
  $('#nav-club').textContent=snapshot.club.name;
  $('#club-tabs').innerHTML=Object.entries(tabs).map(([id,name])=>`<a class="${tab===id?'active':''}" href="#${new URLSearchParams({club:clubId,tab:id})}">${name}</a>`).join('');
  render();
- }catch(e){if(version!==routeVersion)return;content.innerHTML=`<div class="error-state">${esc(e.message)}</div><p class="helper">Abre el gestor desde el servidor local de Amatour con una sesión temporal habilitada.</p>`;}
+ }catch(e){if(version!==routeVersion||!managerReady)return;content.innerHTML=`<div class="error-state">${esc(e.message)}</div><p class="helper">Revisa tu sesión y vuelve a seleccionar el club.</p>`;}
 }
 function renderClubs(){content.innerHTML=title('Mis clubes','Todos tus espacios, en un solo lugar. Selecciona un club para comenzar.')+`<div class="manager-grid">${allClubs.map(c=>`<article class="manager-card"><span class="status-badge ${c.is_active?'':'inactive'}">${c.is_active?'Operativo':'Inactivo'} · ${c.is_demo?'Demo editable':'Solo lectura'}</span><h2>${esc(c.name)}</h2><p>⌖ ${esc(c.address)}</p><p><strong>${c.courts.length} canchas · ${c.courts.filter(x=>x.status==='ACTIVE').length} activas</strong></p><a class="manager-button" href="#${new URLSearchParams({club:c.id,tab:'summary'})}">Gestionar club ↗</a></article>`).join('')||'<div class="empty-state">Todavía no hay clubes registrados.</div>'}</div>`;}
 function render(){
@@ -129,7 +158,5 @@ document.addEventListener('submit',async e=>{if(e.target.id!=='manager-form')ret
  const result=await api(ctx.action,data);dialog.close();notify(result.message||'Guardado.');await route();
  }catch(error){$('#form-error').textContent=error.message;$('#form-error').classList.remove('is-hidden');submit.disabled=false;submit.textContent='Guardar cambios';}finally{saving=false;}});
 $('#close-modal').addEventListener('click',()=>{if(!saving)dialog.close();});dialog.addEventListener('cancel',e=>{if(saving)e.preventDefault();});
-window.addEventListener('hashchange',()=>localManager?route():publicClubView());
-if(!localManager){await publicClubView();}else{
-try{const r=await fetch('/api/manager/session');if(!r.headers.get('content-type')?.includes('application/json'))throw Error('La sesión administrativa no está disponible en este servidor.');const body=await r.json();if(!r.ok)throw Error(body.error);await route();}catch(e){content.innerHTML=`${title('Mis clubes','Panel de demostración')}<div class="error-state">${esc(e.message)}</div><p class="helper">Inicia el servidor local con una sesión temporal protegida. No se habilitan escrituras administrativas públicas.</p>`;}
-}
+window.addEventListener('hashchange',()=>{if(managerReady)route();});
+await startManager();
