@@ -1,5 +1,13 @@
 # Amatour web — prototipo funcional
 
+## Gestor de clubes
+
+En el home, **Acceso clubes** abre `/clubes`. El servidor local ofrece gestión
+persistente de canchas, ventanas, reservas, bloqueos y tarifas con una sesión
+temporal protegida; permite editar solo clubes Demo. Inicia con `npm run dev`.
+La configuración secreta local está ignorada por Git. Consulta
+`database/README-management.md` para migraciones, seguridad, renovación y pruebas.
+
 Home y catálogo de clubes con reservas reales en Supabase. Sin login ni pagos.
 El buscador del hero funciona por palabras de nombre, dirección, comuna y
 características de cancha. No distingue mayúsculas ni tildes y acepta palabras

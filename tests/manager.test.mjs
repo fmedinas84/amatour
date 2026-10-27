@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {minute,windowRange,clock,matrixRate} from '../public/manager-utils.js';
+import {trustedLocalRequest} from '../manager-server.mjs';
+test('multiple and overnight windows use next-day minute offsets',()=>{assert.deepEqual(windowRange('20:00','01:00'),{start_min:1200,end_min:1500});assert.deepEqual(windowRange('08:00','13:00'),{start_min:480,end_min:780});assert.equal(clock(1500),'01:00');assert.throws(()=>minute('08:15'));});
+test('matrix detects mixed pricing and default fallback',()=>{const rates=[{id:'d',alias:'Default',is_active:true,is_default:true},{id:'p',alias:'Peak',is_active:true}];const s=[{court_id:'c',weekday:0,start_min:1080,end_min:1380,rate_plan_id:'p'}];assert.equal(matrixRate(s,rates,'c',0,1050,1110).mixed,true);assert.equal(matrixRate(s,rates,'c',0,1080,1140).id,'p');assert.equal(matrixRate(s,rates,'c',1,1080,1140).id,'d');});
+test('server rejects external origins, hosts and DNS rebinding',()=>{assert.equal(trustedLocalRequest({headers:{host:'127.0.0.1:3200',origin:'http://127.0.0.1:3200'}},3200),true);assert.equal(trustedLocalRequest({headers:{host:'127.0.0.1:3200',origin:'https://evil.example'}},3200),false);assert.equal(trustedLocalRequest({headers:{host:'evil.example:3200'}},3200),false);});
