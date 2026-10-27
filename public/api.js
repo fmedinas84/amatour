@@ -13,7 +13,8 @@ async function request(path, body) {
 }
 export const getClubs = () => request('/clubs?select=id,name,slug,address,timezone,courts(id,name,court_number,is_indoor,surface_type,status,description)&order=name.asc');
 export const availability = (club,date,minutes) => request('/rpc/court_availability',{p_club:club,p_date:date,p_minutes:Number(minutes)});
-export const reserve = (court,start,minutes,guest) => request('/rpc/reserve_guest',{p_court:court,p_start:start,p_minutes:Number(minutes),p_guest:guest});
+export const reserve = (court,start,minutes,guest) => request('/rpc/reserve_guest_priced',{p_court:court,p_start:start,p_minutes:Number(minutes),p_guest:guest});
+export const quoteReservation = (court,start,minutes) => request('/rpc/reservation_quote',{p_court:court,p_start:start,p_minutes:Number(minutes)});
 export function localDate(timezone, date = new Date()) {
   return new Intl.DateTimeFormat('en-CA',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
 }
