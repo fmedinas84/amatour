@@ -1,9 +1,24 @@
-import {localDate,datePlus} from './api.js';
+import {localDate,datePlus,getClubs} from './api.js';
 import {days,esc,clock,minute,windowRange,amount,localStamp,addMinutesLocal,states,activeReservation,matrixRate,calendarRate} from './manager-utils.js';
 const $=s=>document.querySelector(s);
 const content=$('#manager-content'),dialog=$('#manager-dialog');
 let allClubs=[],snapshot=null,clubId=null,tab='summary',day='',courtFilter='',rateCourt='',saving=false,modalContext={};
 let routeVersion=0;
+const localManager=['localhost','127.0.0.1'].includes(location.hostname);
+async function publicClubView(){
+ const version=++routeVersion;
+ content.innerHTML='<div class="empty-state">Cargando clubes…</div>';
+ try{
+  const clubs=await getClubs();if(version!==routeVersion)return;
+  const id=new URLSearchParams(location.hash.slice(1)).get('club');
+  const club=clubs.find(c=>c.id===id);
+  $('#nav-club').textContent=club?.name||'';$('#club-tabs').innerHTML='';
+  document.querySelector('.manager-banner').textContent='Consulta pública · La edición requiere una sesión administrativa protegida.';
+  document.querySelector('.sidebar-note').textContent='Consulta de datos públicos de Supabase. Gestión y edición disponibles en el servidor local protegido.';
+  if(id&&!club)throw Error('No encontramos el club solicitado.');
+  content.innerHTML=club?title(club.name,'Canchas registradas · Solo lectura')+`<div class="manager-panel table-wrap"><table class="manager-table"><thead><tr><th>Cancha</th><th>Superficie</th><th>Tipo</th><th>Estado</th></tr></thead><tbody>${club.courts.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.surface_type||'No especificada')}</td><td>${c.is_indoor?'Techada':'Exterior'}</td><td>${esc({ACTIVE:'Activa',MAINTENANCE:'En mantenimiento',INACTIVE:'Inactiva'}[c.status]||'No informado')}</td></tr>`).join('')||'<tr><td colspan="4">Sin canchas registradas.</td></tr>'}</tbody></table></div>`:title('Mis clubes','Clubes disponibles · Consulta pública de clubes y canchas.')+`<div class="manager-grid">${clubs.map(c=>`<article class="manager-card"><span class="status-badge">Solo lectura</span><h2>${esc(c.name)}</h2><p>${esc(c.address)}</p><p>${c.courts.length} canchas · ${c.courts.filter(x=>x.status==='ACTIVE').length} activas</p><a class="manager-button" href="#club=${encodeURIComponent(c.id)}">Ver canchas ↗</a></article>`).join('')||'<div class="empty-state">Sin clubes registrados.</div>'}</div>`;
+ }catch(e){content.innerHTML=title('Mis clubes','Consulta pública')+`<div class="error-state">${esc(e.message)}</div>`;}
+}
 const tabs={summary:'Resumen',courts:'Canchas',calendar:'Calendario',rates:'Tarifas',settings:'Configuración'};
 async function api(action,data={},id=clubId){const r=await fetch('/api/manager',{method:'POST',headers:{'Content-Type':'application/json','X-Amatour-Manager':'1'},body:JSON.stringify({action,club_id:id,data})});const result=await r.json();if(!r.ok)throw Error(result.error||'No se pudo completar la operación.');return result;}
 function notify(message){const t=$('#manager-toast');t.textContent=message;t.hidden=false;clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.hidden=true,5000);}
@@ -114,5 +129,7 @@ document.addEventListener('submit',async e=>{if(e.target.id!=='manager-form')ret
  const result=await api(ctx.action,data);dialog.close();notify(result.message||'Guardado.');await route();
  }catch(error){$('#form-error').textContent=error.message;$('#form-error').classList.remove('is-hidden');submit.disabled=false;submit.textContent='Guardar cambios';}finally{saving=false;}});
 $('#close-modal').addEventListener('click',()=>{if(!saving)dialog.close();});dialog.addEventListener('cancel',e=>{if(saving)e.preventDefault();});
-window.addEventListener('hashchange',route);
-try{const r=await fetch('/api/manager/session');const body=await r.json();if(!r.ok)throw Error(body.error);await route();}catch(e){content.innerHTML=`${title('Mis clubes','Panel de demostración')}<div class="error-state">${esc(e.message)}</div><p class="helper">Inicia el servidor local con una sesión temporal protegida. No se habilitan escrituras administrativas públicas.</p>`;}
+window.addEventListener('hashchange',()=>localManager?route():publicClubView());
+if(!localManager){await publicClubView();}else{
+try{const r=await fetch('/api/manager/session');if(!r.headers.get('content-type')?.includes('application/json'))throw Error('La sesión administrativa no está disponible en este servidor.');const body=await r.json();if(!r.ok)throw Error(body.error);await route();}catch(e){content.innerHTML=`${title('Mis clubes','Panel de demostración')}<div class="error-state">${esc(e.message)}</div><p class="helper">Inicia el servidor local con una sesión temporal protegida. No se habilitan escrituras administrativas públicas.</p>`;}
+}
