@@ -9,3 +9,16 @@ export function addMinutesLocal(value,n){return new Date(new Date(value+'Z').get
 export const states={AVAILABLE:'Disponible',RESERVED:'Reservada',PENDING:'Pendiente',BLOCKED:'Bloqueada',CLOSED:'Fuera de horario'};
 export function activeReservation(r){return r.status==='CONFIRMED'||(r.status==='PENDING'&&new Date(r.expires_at)>new Date());}
 export function matrixRate(schedules,rates,court,day,start,end){const slices=[];for(let n=start;n<end;n+=30){const s=schedules.find(s=>s.court_id===court&&s.weekday===day&&s.start_min<=n&&s.end_min>=n+30);const rate=rates.find(r=>r.is_active&&r.id===s?.rate_plan_id)||rates.find(r=>r.is_active&&r.is_default);slices.push(rate?.id||null);}return new Set(slices).size>1?{alias:'Mixta',mixed:true}:rates.find(r=>r.id===slices[0])||{alias:'Sin tarifa'};}
+// Display the currently assigned 30-minute rate, using the same priority as quotes.
+// Existing reservations retain their historical quote independently of this display.
+export function calendarRate(snapshot,court,start){
+  const stamp=localStamp(start,snapshot.club.timezone),date=stamp.slice(0,10);
+  const weekday=(new Date(date+'T12:00:00Z').getUTCDay()+6)%7;
+  const minutes=minute(stamp.slice(11,16));
+  const activeRate=id=>snapshot.rates.find(r=>r.id===id&&r.is_active);
+  const covers=r=>r.court_id===court&&r.start_min<=minutes&&r.end_min>=minutes+30;
+  const promotions=snapshot.overrides.filter(r=>covers(r)&&r.date_from<=date&&r.date_to>=date&&r.weekdays.includes(weekday)&&activeRate(r.rate_plan_id));
+  promotions.sort((a,b)=>b.priority-a.priority||b.date_from.localeCompare(a.date_from)||(b.created_at||'').localeCompare(a.created_at||'')||b.id.localeCompare(a.id));
+  const assignment=promotions[0]||snapshot.schedules.find(r=>covers(r)&&r.weekday===weekday&&activeRate(r.rate_plan_id));
+  return activeRate(assignment?.rate_plan_id)||snapshot.rates.find(r=>r.is_active&&r.is_default)||null;
+}
