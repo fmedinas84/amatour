@@ -4,6 +4,14 @@ const API_URL='https://prrfytdglzozamvjffxx.supabase.co/rest/v1/rpc/manager_gate
 const KEY='sb_publishable_Q6CEgQn4XwPK_-6sV21FzA_JPnKMzPZ';
 const actions=new Set(['clubs','snapshot','court.save','court.delete','hours.save','block.save','block.delete','reservation.create','reservation.cancel','rate.save','schedule.apply','schedule.copy','schedule.copy_day','override.save','override.delete','club.save']);
 const cookie=randomBytes(32).toString('hex');
+export async function managerOperation(input,token,request=fetch){
+  if(!actions.has(input.action))return {status:400,data:{error:'Operación no permitida.'}};
+  const upstream=await request(API_URL,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:token,p_action:input.action,p_club:input.club_id||null,p_data:input.data||{}}),signal:AbortSignal.timeout(20000)});
+  const result=await upstream.json();
+  if(upstream.ok)return {status:200,data:result};
+  const error=result.code==='23P01'?'El período se superpone con una reserva, un bloqueo o una ventana existente. Revisa el calendario y resuelve el conflicto explícitamente.':result.code==='23505'?'Ya existe un registro con ese nombre o número en el club.':result.message||'No se pudo guardar la operación.';
+  return {status:result.code==='42501'?403:400,data:{error}};
+}
 export function trustedLocalRequest(req,port){
   const hosts=[`localhost:${port}`,`127.0.0.1:${port}`];
   return hosts.includes(req.headers.host) && (!req.headers.origin || req.headers.origin===`http://${req.headers.host}`);
@@ -23,13 +31,6 @@ export async function handleManager(req,res,port){
   try{
     let body='';for await(const chunk of req){body+=chunk;if(Buffer.byteLength(body)>65536)throw new Error('Solicitud demasiado grande.');}
     const input=JSON.parse(body);
-    if(!actions.has(input.action))throw new Error('Operación no permitida.');
-    const upstream=await fetch(API_URL,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:token,p_action:input.action,p_club:input.club_id||null,p_data:input.data||{}}),signal:AbortSignal.timeout(20000)});
-    const result=await upstream.json();
-    if(!upstream.ok){
-      const message=result.code==='23P01'?'El período se superpone con una reserva, un bloqueo o una ventana existente. Revisa el calendario y resuelve el conflicto explícitamente.':result.code==='23505'?'Ya existe un registro con ese nombre o número en el club.':result.message;
-      send(result.code==='42501'?403:400,{error:message||'No se pudo guardar la operación.'});return;
-    }
-    send(200,result);
+    const result=await managerOperation(input,token);send(result.status,result.data);
   }catch(error){send(400,{error:error.name==='TimeoutError'?'Supabase tardó demasiado. Vuelve a intentarlo.':error.message});}
 }
