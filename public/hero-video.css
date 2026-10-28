@@ -1,0 +1,6 @@
+.hero-video-art .hero-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:left center; }
+.hero-video-art::before { z-index:1; pointer-events:none; opacity:1; background:linear-gradient(180deg,#10291a70,transparent 35%,transparent 65%,#10291a99); }
+.hero-video-art .art-top,.hero-video-art .art-bottom { z-index:2; color:#fff; text-shadow:0 1px 4px #0008; }
+.hero-video-art .floating-note { z-index:2; }
+.hero-video-toggle { position:absolute; right:20px; top:66px; z-index:2; min-height:40px; padding:9px 13px; border-radius:22px; background:#fffffff2; color:#254e36; font-size:11px; }
+.hero-video-toggle[hidden] { display:none; }

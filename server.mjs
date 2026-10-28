@@ -4,7 +4,7 @@ import { resolve, extname } from 'node:path';
 import {handleManager} from './manager-server.mjs';
 const port=Number(process.env.PORT || 3000);
 const root = resolve('public');
-const types = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.svg':'image/svg+xml' };
+const types = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.svg':'image/svg+xml', '.mp4':'video/mp4', '.jpg':'image/jpeg' };
 const server = createServer(async (req,res) => {
   if(req.url.startsWith('/api/manager')){await handleManager(req,res,port);return;}
   const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
