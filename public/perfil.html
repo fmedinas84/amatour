@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mi perfil · Amatour</title>
+  <link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/club-actions.css"><link rel="stylesheet" href="/profile.css">
+  <script type="module" src="/profile.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Ir al contenido</a>
+  <header class="header wrap">
+    <a class="brand" href="/" aria-label="Amatour inicio"><span class="brand-symbol">a<span>↗</span></span>amatour<span class="brand-dot">.</span></a>
+    <nav aria-label="Principal"><a href="/#clubes">Explorar clubes</a><a href="/perfil" aria-current="page">Mi perfil</a></nav>
+    <a class="club-access" href="/clubes">Acceso clubes <span>↗</span></a>
+  </header>
+  <main class="wrap profile-main" id="main">
+    <div class="profile-intro"><div><p class="eyebrow">TU ESPACIO EN LA CANCHA</p><h1>Mi perfil<span>.</span></h1><p>Tu próximo partido y todo lo que ya jugaste.</p></div><span class="demo-pill">Perfil de demostración</span></div>
+    <p class="profile-demo-note">Todos los datos de esta ficha son ficticios. Estas reservas no ocupan horarios reales y el GSR es ilustrativo. No se requiere login.</p>
+    <div class="profile-layout">
+      <aside class="player-card" aria-label="Ficha del jugador">
+        <div class="player-photo-wrap"><img class="player-photo" src="/media/demo-player.jpg" width="144" height="144" alt="Retrato ilustrativo del jugador de demostración"><span class="player-photo-fallback" aria-hidden="true">TM</span></div>
+        <span class="player-label">JUGADOR · DEMO</span><h2 id="player-name"></h2><p class="player-age" id="player-age"></p>
+        <div class="gsr-card"><div class="gsr-heading"><span>Ranking GSR</span><span class="gsr-demo">Ficticio</span></div><strong id="player-gsr"></strong><p>Puntaje de ejemplo</p><div class="gsr-line" aria-hidden="true"><span></span></div></div>
+        <p class="player-footnote">Un perfil para seguir jugando,<br>un partido a la vez.</p><a class="profile-explore" href="/#clubes">Encuentra tu próxima cancha <span>↗</span></a>
+      </aside>
+      <div class="profile-reservations">
+        <section class="reservation-section" aria-labelledby="active-title"><div class="reservation-heading"><div><p class="eyebrow">LO QUE VIENE</p><h2 id="active-title">Reservas activas <span id="active-count" class="reservation-count"></span></h2></div><span class="reservation-hint">Datos de prueba</span></div><ul class="profile-bookings" id="active-reservations"></ul><div class="reservation-pagination"><p id="active-shown" aria-live="polite"></p><button class="profile-more" id="active-more" aria-controls="active-reservations">Ver más reservas activas <span>↓</span></button></div></section>
+        <section class="reservation-section past-section" aria-labelledby="past-title"><div class="reservation-heading"><div><p class="eyebrow">TUS PARTIDOS ANTERIORES</p><h2 id="past-title">Reservas pasadas <span id="past-count" class="reservation-count"></span></h2></div><span class="reservation-hint">Historial de ejemplo</span></div><ul class="profile-bookings" id="past-reservations"></ul><div class="reservation-pagination"><p id="past-shown" aria-live="polite"></p><button class="profile-more" id="past-more" aria-controls="past-reservations">Ver más reservas pasadas <span>↓</span></button></div></section>
+      </div>
+    </div>
+  </main>
+  <footer class="wrap"><a class="brand" href="/">amatour.</a><p>El pádel empieza con un buen encuentro.</p><span>Hecho para jugar. © 2026</span></footer>
+</body>
+</html>

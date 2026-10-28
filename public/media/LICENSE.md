@@ -9,3 +9,10 @@
 padel-hero.mp4 es un extracto optimizado y sin audio del video original.
 padel-poster.jpg es un fotograma del mismo video. Las personas representadas
 no patrocinan ni recomiendan Amatour.
+
+## Retrato de demostración
+
+demo-player.jpg: fotografía de Pixabay en Pexels, identificador 220453.
+Fuente: https://www.pexels.com/photo/adult-beard-boy-casual-220453/
+Licencia: https://www.pexels.com/license/
+El nombre, edad y puntaje de la ficha son ficticios y no describen a la persona fotografiada.
