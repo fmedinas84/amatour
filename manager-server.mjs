@@ -2,7 +2,7 @@ import {randomBytes,timingSafeEqual} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 const API_URL='https://prrfytdglzozamvjffxx.supabase.co/rest/v1/rpc/manager_gateway';
 const KEY='sb_publishable_Q6CEgQn4XwPK_-6sV21FzA_JPnKMzPZ';
-const actions=new Set(['clubs','snapshot','court.save','court.delete','hours.save','block.save','block.delete','reservation.create','reservation.cancel','rate.save','schedule.apply','schedule.copy','schedule.copy_day','override.save','override.delete','club.save']);
+const actions=new Set(['clubs','snapshot','court.save','court.delete','hours.save','block.save','block.delete','reservation.create','reservation.cancel','rate.save','schedule.apply','schedule.copy','schedule.copy_day','override.save','override.delete','club.save','club.photo']);
 const cookie=randomBytes(32).toString('hex');
 export async function managerOperation(input,token,request=fetch){
   if(!actions.has(input.action))return {status:400,data:{error:'Operación no permitida.'}};
