@@ -11,7 +11,7 @@ async function request(path, body) {
   if (!response.ok) throw new Error(data.message || 'No pudimos conectarnos. Intenta nuevamente.');
   return data;
 }
-export const getClubs = () => request('/clubs?select=id,name,slug,address,timezone,courts(id,name,court_number,is_indoor,surface_type,status,description)&order=name.asc');
+export const getClubs = () => request('/clubs?select=id,name,slug,address,timezone,photo_data_url,courts(id,name,court_number,is_indoor,surface_type,status,description)&order=name.asc');
 export const availability = (club,date,minutes) => request('/rpc/court_availability',{p_club:club,p_date:date,p_minutes:Number(minutes)});
 export const reserve = (court,start,minutes,guest) => request('/rpc/reserve_guest_priced',{p_court:court,p_start:start,p_minutes:Number(minutes),p_guest:guest});
 export const quoteReservation = (court,start,minutes) => request('/rpc/reservation_quote',{p_court:court,p_start:start,p_minutes:Number(minutes)});

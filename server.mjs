@@ -8,7 +8,7 @@ const types = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; char
 const server = createServer(async (req,res) => {
   if(req.url.startsWith('/api/manager')){await handleManager(req,res,port);return;}
   const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
-  const file = resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname === '/clubes' ? '/manager.html' : pathname));
+  const file = resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname === '/clubes' ? '/manager.html' : pathname === '/perfil' ? '/perfil.html' : pathname));
   if (!file.startsWith(root + '\\') && !file.startsWith(root + '/')) { res.writeHead(403).end(); return; }
   try { const data=await readFile(file); res.writeHead(200,{'Content-Type':types[extname(file)] || 'application/octet-stream','X-Content-Type-Options':'nosniff'}); res.end(data); }
   catch { res.writeHead(404).end('No encontrado'); }
